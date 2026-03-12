@@ -841,15 +841,23 @@ async function sendMessage() {
   const typingEl = addTypingIndicator();
 
   try {
+    // Inject system prompt ke user message pertama agar kompatibel semua model
+    const history = messages.slice(-20);
+    const messagesPayload = history.map((m, i) => {
+      if (i === 0 && m.role === 'user') {
+        return { role: 'user', content: `[Panduan: ${SYSTEM_PROMPT}]
+
+${m.content}` };
+      }
+      return m;
+    });
+
     const res = await fetch('/api/generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model,
-        messages: [
-          { role: 'system', content: SYSTEM_PROMPT },
-          ...messages.slice(-20) // keep last 20 messages for context
-        ],
+        messages: messagesPayload,
         temperature: 0.7,
         max_tokens: 2000
       })
