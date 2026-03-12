@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI PPT Generator</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pptxgenjs/3.12.0/pptxgen.bundle.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap');
+
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --surface2: #1a1a26;
+    --border: #2a2a3d;
+    --accent: #6c63ff;
+    --accent2: #ff6b9d;
+    --accent3: #00e5ff;
+    --text: #f0f0ff;
+    --muted: #8888aa;
+    --success: #00d68f;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 80% 50% at 20% 10%, rgba(108,99,255,0.12) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 80% 80%, rgba(255,107,157,0.08) 0%, transparent 50%),
+      radial-gradient(ellipse 40% 60% at 50% 50%, rgba(0,229,255,0.04) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 4rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  header {
+    text-align: center;
+    padding: 3.5rem 0 3rem;
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(108,99,255,0.15);
+    border: 1px solid rgba(108,99,255,0.35);
+    color: #a89fff;
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 5px 14px;
+    border-radius: 100px;
+    margin-bottom: 1.5rem;
+  }
+
+  .badge::before {
+    content: '';
+    width: 6px; height: 6px;
+    background: var(--accent);
+    border-radius: 50%;
+    box-shadow: 0 0 8px var(--accent);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.8); }
+  }
+
+  h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(2.2rem, 5vw, 3.4rem);
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    margin-bottom: 1rem;
+  }
+
+  h1 span {
+    background: linear-gradient(135deg, var(--accent), var(--accent2), var(--accent3));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .subtitle {
+    color: var(--muted);
+    font-size: 1.05rem;
+    font-weight: 300;
+    max-width: 480px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(108,99,255,0.5), transparent);
+  }
+
+  .section-label {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .field { margin-bottom: 1.25rem; }
+
+  label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #c0c0e0;
+    margin-bottom: 0.5rem;
+  }
+
+  input[type="text"], select, textarea {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.8rem 1rem;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  input:focus, select:focus, textarea:focus {
+    border-color: rgba(108,99,255,0.6);
+    box-shadow: 0 0 0 3px rgba(108,99,255,0.12);
+  }
+
+  textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
+  select option { background: #1a1a26; }
+
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  @media (max-width: 540px) { .grid-2 { grid-template-columns: 1fr; } }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 0.5rem; }
+
+  .chip {
+    cursor: pointer;
+    padding: 5px 14px;
+    border-radius: 100px;
+    border: 1px solid var(--border);
+    font-size: 0.8rem;
+    color: var(--muted);
+    background: var(--surface2);
+    transition: all 0.15s;
+    user-select: none;
+  }
+
+  .chip:hover { border-color: var(--accent); color: var(--text); }
+  .chip.active { background: rgba(108,99,255,0.2); border-color: var(--accent); color: #c0b4ff; }
+
+  .slider-row { display: flex; align-items: center; gap: 1rem; }
+
+  input[type="range"] {
+    flex: 1;
+    -webkit-appearance: none;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--border);
+    outline: none;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+  }
+
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+    box-shadow: 0 0 8px rgba(108,99,255,0.5);
+  }
+
+  .slider-val {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--accent);
+    min-width: 2.5rem;
+    text-align: right;
+  }
+
+  .btn-generate {
+    width: 100%;
+    padding: 1rem;
+    background: linear-gradient(135deg, var(--accent), #8b5cf6);
+    border: none;
+    border-radius: 12px;
+    color: white;
+    font-family: 'Syne', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.15s, box-shadow 0.15s;
+    margin-top: 0.5rem;
+  }
+
+  .btn-generate:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(108,99,255,0.4);
+  }
+
+  .btn-generate:active:not(:disabled) { transform: translateY(0); }
+  .btn-generate:disabled { opacity: 0.6; cursor: not-allowed; }
+
+  .btn-generate .btn-inner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+
+  .progress-wrap { display: none; margin-top: 1.5rem; }
+  .progress-wrap.visible { display: block; }
+
+  .progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.6rem;
+  }
+
+  .progress-status { font-size: 0.85rem; color: var(--muted); font-style: italic; }
+  .progress-pct { font-family: 'Syne', sans-serif; font-size: 0.85rem; font-weight: 700; color: var(--accent); }
+
+  .progress-bar { height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent3));
+    border-radius: 2px;
+    transition: width 0.4s ease;
+    width: 0%;
+    box-shadow: 0 0 8px rgba(0,229,255,0.5);
+  }
+
+  .log-area {
+    display: none;
+    margin-top: 1rem;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem;
+    max-height: 200px;
+    overflow-y: auto;
+    font-family: 'Courier New', monospace;
+    font-size: 0.78rem;
+    line-height: 1.8;
+    color: var(--muted);
+  }
+
+  .log-area.visible { display: block; }
+  .log-line { display: block; }
+  .log-line.ok { color: var(--success); }
+  .log-line.err { color: #ff6b6b; }
+  .log-line.info { color: var(--accent3); }
+
+  .result-card {
+    display: none;
+    background: rgba(0,214,143,0.06);
+    border: 1px solid rgba(0,214,143,0.25);
+    border-radius: 16px;
+    padding: 1.5rem;
+    text-align: center;
+    margin-top: 1.5rem;
+  }
+
+  .result-card.visible { display: block; }
+  .result-icon { font-size: 2.5rem; margin-bottom: 0.75rem; }
+  .result-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.1rem; color: var(--success); margin-bottom: 0.4rem; }
+  .result-desc { font-size: 0.85rem; color: var(--muted); margin-bottom: 1.25rem; }
+
+  .btn-download {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0.7rem 1.8rem;
+    background: var(--success);
+    color: #001a0d;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 0.9rem;
+    border: none;
+    border-radius: 100px;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+
+  .btn-download:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,214,143,0.35); }
+
+  .error-msg {
+    display: none;
+    background: rgba(255,80,80,0.08);
+    border: 1px solid rgba(255,80,80,0.25);
+    border-radius: 10px;
+    padding: 0.9rem 1.1rem;
+    color: #ff9090;
+    font-size: 0.85rem;
+    margin-top: 1rem;
+    line-height: 1.5;
+  }
+
+  .error-msg.visible { display: block; }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--surface2); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  .spinner {
+    width: 18px; height: 18px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    display: none;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .slides-preview { display: none; }
+  .slides-preview.visible { display: block; }
+
+  .slide-item {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.8rem 1rem;
+    margin-bottom: 0.5rem;
+    font-size: 0.85rem;
+  }
+
+  .slide-item strong {
+    color: var(--accent);
+    font-family: 'Syne', sans-serif;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .slide-item p { color: var(--muted); margin-top: 3px; font-size: 0.8rem; line-height: 1.4; }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div class="badge">Powered by AI</div>
+    <h1>Buat <span>Presentasi</span><br>Secara Otomatis</h1>
+    <p class="subtitle">Ketik topik, pilih gaya, dan AI akan menghasilkan slide PowerPoint siap pakai dalam hitungan detik.</p>
+  </header>
+
+  <!-- Content Config -->
+  <div class="card">
+    <div class="section-label">📝 Konten Presentasi</div>
+    <div class="field">
+      <label for="topic">Topik / Judul Presentasi</label>
+      <textarea id="topic" placeholder="Contoh: Pengenalan Artificial Intelligence untuk Pelajar SMA&#10;Contoh: Strategi Pemasaran Digital 2025&#10;Contoh: Dampak Perubahan Iklim terhadap Pertanian Indonesia"></textarea>
+    </div>
+    <div class="field">
+      <label for="audience">Target Audiens</label>
+      <input type="text" id="audience" placeholder="Contoh: Mahasiswa, Tim Marketing, Investor, Umum..." value="Umum">
+    </div>
+    <div class="field">
+      <label>Bahasa Output</label>
+      <div class="chips">
+        <div class="chip active" data-lang="Indonesia">🇮🇩 Indonesia</div>
+        <div class="chip" data-lang="English">🇬🇧 English</div>
+        <div class="chip" data-lang="mixed">🌐 Campuran</div>
+      </div>
+    </div>
+    <div class="field">
+      <label for="model">Model AI</label>
+      <select id="model">
+        <option value="meta-llama/llama-4-scout:free">Llama 4 Scout</option>
+        <option value="meta-llama/llama-4-maverick:free">Llama 4 Maverick</option>
+        <option value="google/gemini-2.0-flash-exp:free">Gemini 2.0 Flash</option>
+        <option value="deepseek/deepseek-r1:free">DeepSeek R1</option>
+        <option value="mistralai/mistral-7b-instruct:free">Mistral 7B</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Design Config -->
+  <div class="card">
+    <div class="section-label">🎨 Desain & Format</div>
+    <div class="field">
+      <label>Gaya Visual</label>
+      <div class="chips">
+        <div class="chip active" data-theme="professional">💼 Profesional</div>
+        <div class="chip" data-theme="creative">🎨 Kreatif</div>
+        <div class="chip" data-theme="minimal">⬜ Minimal</div>
+        <div class="chip" data-theme="dark">🌑 Dark Mode</div>
+        <div class="chip" data-theme="vibrant">🌈 Vibrant</div>
+      </div>
+    </div>
+    <div class="field">
+      <label>Jumlah Slide</label>
+      <div class="slider-row">
+        <input type="range" id="slideCount" min="4" max="15" value="8">
+        <span class="slider-val" id="slideCountVal">8</span>
+      </div>
+    </div>
+    <div class="grid-2">
+      <div class="field">
+        <label for="slideRatio">Rasio Slide</label>
+        <select id="slideRatio">
+          <option value="16x9">16:9 (Standar)</option>
+          <option value="4x3">4:3 (Klasik)</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="contentDepth">Kedalaman Konten</label>
+        <select id="contentDepth">
+          <option value="summary">Ringkasan</option>
+          <option value="balanced" selected>Seimbang</option>
+          <option value="detailed">Detail</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <button class="btn-generate" id="generateBtn" onclick="generatePPT()">
+    <div class="btn-inner">
+      <div class="spinner" id="spinner"></div>
+      <span id="btnText">✨ Generate Presentasi</span>
+    </div>
+  </button>
+
+  <div class="progress-wrap" id="progressWrap">
+    <div class="progress-header">
+      <span class="progress-status" id="progressStatus">Menghubungi AI...</span>
+      <span class="progress-pct" id="progressPct">0%</span>
+    </div>
+    <div class="progress-bar">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+  </div>
+
+  <div class="log-area" id="logArea"></div>
+  <div class="error-msg" id="errorMsg"></div>
+
+  <div class="slides-preview" id="slidesPreview">
+    <div class="section-label" style="margin-top:1.5rem">📋 Struktur Slide</div>
+    <div id="slidesList"></div>
+  </div>
+
+  <div class="result-card" id="resultCard">
+    <div class="result-icon">🎉</div>
+    <div class="result-title">Presentasi Berhasil Dibuat!</div>
+    <div class="result-desc" id="resultDesc">File PowerPoint siap didownload</div>
+    <button class="btn-download" id="downloadBtn">⬇️ Download .pptx</button>
+  </div>
+</div>
+
+<script>
+let selectedLang = 'Indonesia';
+let selectedTheme = 'professional';
+let pptxBlob = null;
+let pptxFilename = '';
+
+document.querySelectorAll('.chip[data-lang]').forEach(c => {
+  c.addEventListener('click', () => {
+    document.querySelectorAll('.chip[data-lang]').forEach(x => x.classList.remove('active'));
+    c.classList.add('active');
+    selectedLang = c.dataset.lang;
+  });
+});
+
+document.querySelectorAll('.chip[data-theme]').forEach(c => {
+  c.addEventListener('click', () => {
+    document.querySelectorAll('.chip[data-theme]').forEach(x => x.classList.remove('active'));
+    c.classList.add('active');
+    selectedTheme = c.dataset.theme;
+  });
+});
+
+document.getElementById('slideCount').addEventListener('input', function() {
+  document.getElementById('slideCountVal').textContent = this.value;
+});
+
+function log(msg, type='info') {
+  const area = document.getElementById('logArea');
+  area.classList.add('visible');
+  const line = document.createElement('span');
+  line.className = `log-line ${type}`;
+  const time = new Date().toLocaleTimeString('id-ID', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  line.textContent = `[${time}] ${msg}`;
+  area.appendChild(line);
+  area.appendChild(document.createElement('br'));
+  area.scrollTop = area.scrollHeight;
+}
+
+function setProgress(pct, status) {
+  document.getElementById('progressWrap').classList.add('visible');
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressPct').textContent = pct + '%';
+  document.getElementById('progressStatus').textContent = status;
+}
+
+function showError(msg) {
+  const el = document.getElementById('errorMsg');
+  el.innerHTML = '⚠️ ' + msg;
+  el.classList.add('visible');
+}
+
+function hideError() { document.getElementById('errorMsg').classList.remove('visible'); }
+
+function setLoading(on) {
+  document.getElementById('generateBtn').disabled = on;
+  document.getElementById('spinner').style.display = on ? 'block' : 'none';
+  document.getElementById('btnText').textContent = on ? 'Sedang Membuat...' : '✨ Generate Presentasi';
+}
+
+// ✅ Panggil /api/generate (Netlify Function), bukan OpenRouter langsung
+async function callAI(model, prompt) {
+  const res = await fetch('/api/generate', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: model,
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.7,
+      max_tokens: 4000
+    })
+  });
+
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+  return data.choices[0]?.message?.content || '';
+}
+
+const themes = {
+  professional: { bg: 'FFFFFF', titleBg: '1E3A5F', titleText: 'FFFFFF', accent: '2E86AB', bodyBg: 'F8FAFC', bodyText: '1E293B', headerBg: 'E8F0FE', headerText: '1E3A5F', bulletColor: '2E86AB', font: 'Calibri', headerFont: 'Calibri' },
+  creative:     { bg: 'FFFBF5', titleBg: 'FF6B35', titleText: 'FFFFFF', accent: 'FF6B35', bodyBg: 'FFFBF5', bodyText: '2D1B00', headerBg: 'FFF3E0', headerText: 'E65100', bulletColor: 'FF6B35', font: 'Georgia', headerFont: 'Georgia' },
+  minimal:      { bg: 'FAFAFA', titleBg: '111111', titleText: 'FFFFFF', accent: '555555', bodyBg: 'FAFAFA', bodyText: '222222', headerBg: 'F0F0F0', headerText: '111111', bulletColor: '888888', font: 'Calibri', headerFont: 'Calibri' },
+  dark:         { bg: '0F172A', titleBg: '6C63FF', titleText: 'FFFFFF', accent: '6C63FF', bodyBg: '1E293B', bodyText: 'E2E8F0', headerBg: '334155', headerText: 'A5B4FC', bulletColor: '818CF8', font: 'Calibri', headerFont: 'Calibri' },
+  vibrant:      { bg: 'FFFFFF', titleBg: '7C3AED', titleText: 'FFFFFF', accent: 'EC4899', bodyBg: 'FAFAFA', bodyText: '1F2937', headerBg: 'EDE9FE', headerText: '7C3AED', bulletColor: 'EC4899', font: 'Trebuchet MS', headerFont: 'Trebuchet MS' }
+};
+
+async function generatePPT() {
+  hideError();
+  document.getElementById('logArea').classList.remove('visible');
+  document.getElementById('logArea').innerHTML = '';
+  document.getElementById('resultCard').classList.remove('visible');
+  document.getElementById('slidesPreview').classList.remove('visible');
+  document.getElementById('progressWrap').classList.remove('visible');
+
+  const model = document.getElementById('model').value;
+  const topic = document.getElementById('topic').value.trim();
+  const audience = document.getElementById('audience').value.trim() || 'Umum';
+  const slideCount = parseInt(document.getElementById('slideCount').value);
+  const ratio = document.getElementById('slideRatio').value;
+  const depth = document.getElementById('contentDepth').value;
+
+  if (!topic) return showError('Masukkan topik presentasi terlebih dahulu.');
+
+  setLoading(true);
+  setProgress(5, 'Menyiapkan prompt...');
+
+  try {
+    const depthMap = { summary: 'singkat (2-3 poin per slide)', balanced: 'seimbang (3-4 poin per slide)', detailed: 'detail (4-5 poin per slide)' };
+
+    const prompt = `Kamu adalah ahli presentasi profesional. Buat struktur presentasi PowerPoint dalam bahasa ${selectedLang} untuk topik berikut:
+
+TOPIK: ${topic}
+AUDIENS: ${audience}
+JUMLAH SLIDE: ${slideCount}
+KEDALAMAN KONTEN: ${depthMap[depth]}
+
+Buat PERSIS ${slideCount} slide. Format output HARUS berupa JSON valid saja (tanpa teks lain, tanpa markdown code block):
+
+{
+  "title": "Judul Presentasi",
+  "subtitle": "Subjudul singkat",
+  "slides": [
+    {
+      "type": "title",
+      "title": "Judul Presentasi",
+      "subtitle": "Subjudul atau tagline menarik",
+      "presenter": "Nama Presenter / Organisasi"
+    },
+    {
+      "type": "agenda",
+      "title": "Agenda",
+      "points": ["Topik 1", "Topik 2", "Topik 3"]
+    },
+    {
+      "type": "content",
+      "title": "Judul Slide",
+      "points": ["Poin utama 1", "Poin utama 2", "Poin utama 3"],
+      "note": "Catatan opsional"
+    },
+    {
+      "type": "closing",
+      "title": "Kesimpulan",
+      "message": "Pesan penutup yang kuat",
+      "cta": "Call to action"
+    }
+  ]
+}
+
+ATURAN: Slide pertama HARUS type "title", kedua type "agenda", terakhir type "closing", sisanya type "content". Output JSON murni saja.`;
+
+    log('Mengirim permintaan ke server...', 'info');
+    setProgress(15, 'AI sedang membuat konten...');
+
+    const rawResponse = await callAI(model, prompt);
+    log('Respons diterima dari AI', 'ok');
+    setProgress(50, 'Memproses konten slide...');
+
+    let slideData;
+    try {
+      let jsonStr = rawResponse.trim().replace(/^```(?:json)?\n?/m, '').replace(/\n?```$/m, '').trim();
+      const jsonStart = jsonStr.indexOf('{');
+      const jsonEnd = jsonStr.lastIndexOf('}');
+      if (jsonStart !== -1 && jsonEnd !== -1) jsonStr = jsonStr.substring(jsonStart, jsonEnd + 1);
+      slideData = JSON.parse(jsonStr);
+    } catch(e) {
+      throw new Error('AI mengembalikan format tidak valid. Coba lagi atau pilih model lain.');
+    }
+
+    log(`Struktur slide berhasil diparse: ${slideData.slides?.length || 0} slide`, 'ok');
+    setProgress(60, 'Membuat file PowerPoint...');
+
+    showSlidesPreview(slideData.slides);
+    await buildPPTX(slideData, ratio);
+
+    setProgress(100, 'Selesai!');
+    log('File PowerPoint berhasil dibuat!', 'ok');
+
+    document.getElementById('resultDesc').textContent = `${slideData.slides?.length || 0} slide • ${slideData.title}`;
+    document.getElementById('resultCard').classList.add('visible');
+
+  } catch(err) {
+    log('Error: ' + err.message, 'err');
+    showError(err.message);
+    setProgress(0, '');
+    document.getElementById('progressWrap').classList.remove('visible');
+  } finally {
+    setLoading(false);
+  }
+}
+
+function showSlidesPreview(slides) {
+  const list = document.getElementById('slidesList');
+  list.innerHTML = '';
+  slides.forEach((s, i) => {
+    const item = document.createElement('div');
+    item.className = 'slide-item';
+    const typeLabel = { title: 'JUDUL', agenda: 'AGENDA', content: 'KONTEN', closing: 'PENUTUP' }[s.type] || s.type.toUpperCase();
+    const preview = s.points ? s.points.slice(0,2).join(' • ') + (s.points.length > 2 ? '...' : '') : (s.subtitle || s.message || '');
+    item.innerHTML = `<strong>Slide ${i+1} — ${typeLabel}</strong><div style="color:#e0e0ff;font-size:0.88rem;margin-top:4px">${s.title}</div><p>${preview}</p>`;
+    list.appendChild(item);
+  });
+  document.getElementById('slidesPreview').classList.add('visible');
+}
+
+async function buildPPTX(data, ratio) {
+  const pptx = new PptxGenJS();
+  const t = themes[selectedTheme];
+  pptx.layout = ratio === '4x3' ? 'LAYOUT_4x3' : 'LAYOUT_16x9';
+  pptx.author = 'AI PPT Generator';
+  pptx.title = data.title || 'Presentasi';
+  const W = 10, H = ratio === '4x3' ? 7.5 : 5.625;
+
+  for (const [idx, slide] of (data.slides || []).entries()) {
+    log(`Membuat slide ${idx+1}: ${slide.title}`, 'info');
+    const s = pptx.addSlide();
+    if (slide.type === 'title') buildTitleSlide(pptx, s, slide, t, W, H);
+    else if (slide.type === 'agenda') buildAgendaSlide(pptx, s, slide, t, W, H);
+    else if (slide.type === 'closing') buildClosingSlide(pptx, s, slide, t, W, H);
+    else buildContentSlide(pptx, s, slide, t, W, H, idx + 1);
+    setProgress(60 + Math.round((idx / data.slides.length) * 35), `Membuat slide ${idx+1}/${data.slides.length}...`);
+    await new Promise(r => setTimeout(r, 10));
+  }
+
+  pptxFilename = (data.title || 'presentasi').replace(/[^a-zA-Z0-9\s]/g,'').replace(/\s+/g,'-').toLowerCase() + '.pptx';
+  pptxBlob = await pptx.write({ outputType: 'blob' });
+
+  document.getElementById('downloadBtn').onclick = () => {
+    const url = URL.createObjectURL(pptxBlob);
+    const a = document.createElement('a');
+    a.href = url; a.download = pptxFilename;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+}
+
+function buildTitleSlide(pptx, s, slide, t, W, H) {
+  s.addShape(pptx.shapes.RECTANGLE, { x:0, y:0, w:W, h:H, fill:{color:t.titleBg}, line:{color:t.titleBg} });
+  s.addShape(pptx.shapes.OVAL, { x:W*0.6, y:-1.5, w:5, h:5, fill:{color:'FFFFFF',transparency:90}, line:{color:'FFFFFF',transparency:85} });
+  s.addShape(pptx.shapes.OVAL, { x:W*0.75, y:H*0.5, w:3, h:3, fill:{color:'FFFFFF',transparency:93}, line:{color:'FFFFFF',transparency:90} });
+  s.addShape(pptx.shapes.RECTANGLE, { x:0, y:H-0.35, w:W*0.4, h:0.35, fill:{color:'FFFFFF',transparency:70}, line:{color:'FFFFFF',transparency:70} });
+  s.addShape(pptx.shapes.RECTANGLE, { x:0.5, y:H*0.3, w:0.06, h:H*0.4, fill:{color:'FFFFFF',transparency:50}, line:{color:'FFFFFF',transparency:50} });
+  const titleText = slide.title || 'Presentasi';
+  s.addText(titleText, { x:0.8, y:H*0.28, w:W*0.65, h:H*0.35, fontSize:titleText.length>40?28:36, fontFace:t.headerFont, bold:true, color:t.titleText, valign:'middle', wrap:true });
+  if (slide.subtitle) s.addText(slide.subtitle, { x:0.8, y:H*0.62, w:W*0.6, h:0.7, fontSize:16, fontFace:t.font, color:'FFFFFF', italic:true, transparency:20 });
+  if (slide.presenter) s.addText(slide.presenter, { x:0.8, y:H-0.9, w:W*0.5, h:0.5, fontSize:13, fontFace:t.font, color:'FFFFFF', transparency:35 });
+}
+
+function buildAgendaSlide(pptx, s, slide, t, W, H) {
+  s.background = { color: t.bodyBg };
+  s.addShape(pptx.shapes.RECTANGLE, { x:0, y:0, w:W, h:1.1, fill:{color:t.titleBg}, line:{color:t.titleBg} });
+  s.addText(slide.title || 'Agenda', { x:0.6, y:0, w:W-1, h:1.1, fontSize:26, fontFace:t.headerFont, bold:true, color:t.titleText, valign:'middle', margin:0 });
+  const points = slide.points || [];
+  const cols = points.length > 6 ? 2 : 1;
+  const half = Math.ceil(points.length / cols);
+  for (let col = 0; col < cols; col++) {
+    const colPoints = points.slice(col*half, (col+1)*half);
+    const colX = col === 0 ? 0.7 : W/2+0.3;
+    const colW = cols === 2 ? W/2-1 : W-1.4;
+    colPoints.forEach((pt, i) => {
+      const y = 1.5 + i * 0.65;
+      s.addShape(pptx.shapes.OVAL, { x:colX, y:y-0.02, w:0.4, h:0.4, fill:{color:t.accent}, line:{color:t.accent} });
+      s.addText(String(col*half+i+1), { x:colX, y:y-0.02, w:0.4, h:0.4, fontSize:11, fontFace:t.font, bold:true, color:'FFFFFF', align:'center', valign:'middle', margin:0 });
+      s.addText(pt, { x:colX+0.55, y:y, w:colW-0.55, h:0.4, fontSize:14, fontFace:t.font, color:t.bodyText, valign:'middle' });
+    });
+  }
+}
+
+function buildContentSlide(pptx, s, slide, t, W, H, slideNum) {
+  s.background = { color: t.bodyBg };
+  s.addShape(pptx.shapes.RECTANGLE, { x:0, y:0, w:W, h:1.05, fill:{color:t.headerBg}, line:{color:t.headerBg} });
+  s.addShape(pptx.shapes.RECTANGLE, { x:0, y:0, w:0.18, h:1.05, fill:{color:t.accent}, line:{color:t.accent} });
+  s.addText(slide.title || '', { x:0.4, y:0, w:W-1, h:1.05, fontSize:22, fontFace:t.headerFont, bold:true, color:t.headerText, valign:'middle', margin:0 });
+  const points = slide.points || [];
+  points.forEach((pt, i) => {
+    const y = 1.35 + i * 0.75;
+    if (y > H - 0.6) return;
+    s.addShape(pptx.shapes.OVAL, { x:0.55, y:y+0.13, w:0.16, h:0.16, fill:{color:t.bulletColor}, line:{color:t.bulletColor} });
+    s.addText(pt, { x:0.9, y:y, w:W-1.3, h:0.65, fontSize:14, fontFace:t.font, color:t.bodyText, valign:'middle', wrap:true });
+    if (i < points.length-1 && y+0.75 < H-0.6) {
+      s.addShape(pptx.shapes.LINE, { x:0.9, y:y+0.68, w:W-1.6, h:0, line:{color:t.accent,width:0.5,transparency:70} });
+    }
+  });
+  if (slide.note && points.length < 4) {
+    const noteY = Math.min(1.35 + points.length * 0.75 + 0.2, H - 0.8);
+    s.addShape(pptx.shapes.RECTANGLE, { x:0.5, y:noteY, w:W-1, h:0.55, fill:{color:t.headerBg}, line:{color:t.accent,transparency:60} });
+    s.addText('💡 ' + slide.note, { x:0.7, y:noteY, w:W-1.4, h:0.55, fontSize:11, fontFace:t.font, color:t.headerText, italic:true, valign:'middle' });
+  }
+  s.addText(String(slideNum), { x:W-0.7, y:H-0.45, w:0.5, h:0.3, fontSize:10, fontFace:t.font, color:t.accent, align:'right' });
+}
+
+function buildClosingSlide(pptx, s, slide, t, W, H) {
+  s.addShape(pptx.shapes.RECTANGLE, { x:0, y:0, w:W, h:H, fill:{color:t.titleBg}, line:{color:t.titleBg} });
+  s.addShape(pptx.shapes.OVAL, { x:-1, y:-1, w:4, h:4, fill:{color:'FFFFFF',transparency:92}, line:{color:'FFFFFF',transparency:90} });
+  s.addShape(pptx.shapes.OVAL, { x:W*0.7, y:H*0.4, w:4.5, h:4.5, fill:{color:'FFFFFF',transparency:92}, line:{color:'FFFFFF',transparency:90} });
+  s.addShape(pptx.shapes.RECTANGLE, { x:W*0.35, y:H*0.45, w:W*0.3, h:0.04, fill:{color:'FFFFFF',transparency:50}, line:{color:'FFFFFF',transparency:50} });
+  s.addText(slide.title || 'Terima Kasih', { x:0.5, y:H*0.15, w:W-1, h:1.2, fontSize:38, fontFace:t.headerFont, bold:true, color:t.titleText, align:'center', valign:'middle' });
+  if (slide.message) s.addText(slide.message, { x:1, y:H*0.5, w:W-2, h:1.0, fontSize:16, fontFace:t.font, color:'FFFFFF', align:'center', italic:true, wrap:true, transparency:10 });
+  if (slide.cta) {
+    s.addShape(pptx.shapes.RECTANGLE, { x:(W-4.5)/2, y:H*0.75, w:4.5, h:0.6, fill:{color:'FFFFFF',transparency:15}, line:{color:'FFFFFF',transparency:40} });
+    s.addText(slide.cta, { x:(W-4.3)/2, y:H*0.75, w:4.3, h:0.6, fontSize:13, fontFace:t.font, bold:true, color:'FFFFFF', align:'center', valign:'middle', margin:0 });
+  }
+}
+</script>
+</body>
+</html>
