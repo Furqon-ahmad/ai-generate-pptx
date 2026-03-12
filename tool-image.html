@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Image Generator — AI Tools Hub</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap');
+  :root {
+    --bg:#0a0a0f;--surface:#12121a;--surface2:#1a1a26;--border:#2a2a3d;
+    --accent:#ff6b9d;--text:#f0f0ff;--muted:#8888aa;--success:#00d68f;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+  body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 70% 50% at 20% 10%,rgba(255,107,157,0.1) 0%,transparent 60%),radial-gradient(ellipse 50% 40% at 80% 80%,rgba(108,99,255,0.07) 0%,transparent 50%);pointer-events:none;z-index:0}
+  .container{max-width:860px;margin:0 auto;padding:2rem 1.5rem 4rem;position:relative;z-index:1}
+  .back{display:inline-flex;align-items:center;gap:8px;color:var(--muted);font-size:0.85rem;text-decoration:none;margin-bottom:2rem;transition:color .2s}
+  .back:hover{color:var(--text)}
+  header{text-align:center;padding:1rem 0 2.5rem}
+  .badge{display:inline-flex;align-items:center;gap:6px;background:rgba(255,107,157,0.15);border:1px solid rgba(255,107,157,0.35);color:#ffb3cc;font-size:.72rem;font-weight:500;letter-spacing:.12em;text-transform:uppercase;padding:5px 14px;border-radius:100px;margin-bottom:1.2rem}
+  h1{font-family:'Syne',sans-serif;font-size:clamp(2rem,4vw,3rem);font-weight:800;letter-spacing:-.03em;margin-bottom:.8rem}
+  h1 span{background:linear-gradient(135deg,#ff6b9d,#ff9a3c);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+  .subtitle{color:var(--muted);font-size:1rem;max-width:420px;margin:0 auto;line-height:1.6}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:2rem;margin-bottom:1.5rem;position:relative;overflow:hidden}
+  .card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,107,157,0.5),transparent)}
+  .section-label{font-family:'Syne',sans-serif;font-size:.7rem;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-bottom:1rem;display:flex;align-items:center;gap:8px}
+  .section-label::after{content:'';flex:1;height:1px;background:var(--border)}
+  .field{margin-bottom:1.25rem}
+  label{display:block;font-size:.85rem;font-weight:500;color:#c0c0e0;margin-bottom:.5rem}
+  textarea,select,input[type=text]{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:.8rem 1rem;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.95rem;outline:none;transition:border-color .2s,box-shadow .2s}
+  textarea:focus,select:focus,input:focus{border-color:rgba(255,107,157,.6);box-shadow:0 0 0 3px rgba(255,107,157,.12)}
+  textarea{resize:vertical;min-height:90px;line-height:1.5}
+  select option{background:#1a1a26}
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+  @media(max-width:540px){.grid-2{grid-template-columns:1fr}}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:.5rem}
+  .chip{cursor:pointer;padding:5px 14px;border-radius:100px;border:1px solid var(--border);font-size:.8rem;color:var(--muted);background:var(--surface2);transition:all .15s;user-select:none}
+  .chip:hover{border-color:var(--accent);color:var(--text)}
+  .chip.active{background:rgba(255,107,157,.2);border-color:var(--accent);color:#ffb3cc}
+  .btn-generate{width:100%;padding:1rem;background:linear-gradient(135deg,#ff6b9d,#ff4f81);border:none;border-radius:12px;color:white;font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;cursor:pointer;transition:transform .15s,box-shadow .15s;margin-top:.5rem}
+  .btn-generate:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 8px 30px rgba(255,107,157,.4)}
+  .btn-generate:disabled{opacity:.6;cursor:not-allowed}
+  .btn-inner{display:flex;align-items:center;justify-content:center;gap:10px}
+  .spinner{width:18px;height:18px;border:2px solid rgba(255,255,255,.3);border-top-color:white;border-radius:50%;animation:spin .7s linear infinite;display:none}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .error-msg{display:none;background:rgba(255,80,80,.08);border:1px solid rgba(255,80,80,.25);border-radius:10px;padding:.9rem 1.1rem;color:#ff9090;font-size:.85rem;margin-top:1rem;line-height:1.5}
+  .error-msg.visible{display:block}
+  /* Image result */
+  .image-result{display:none;margin-top:1.5rem;text-align:center}
+  .image-result.visible{display:block}
+  .img-wrap{position:relative;display:inline-block;border-radius:16px;overflow:hidden;border:1px solid var(--border);max-width:100%;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+  .img-wrap img{display:block;max-width:100%;height:auto;max-height:520px;object-fit:contain}
+  .img-overlay{position:absolute;bottom:0;left:0;right:0;padding:1.2rem;background:linear-gradient(transparent,rgba(0,0,0,.8));display:flex;justify-content:flex-end;gap:10px;opacity:0;transition:opacity .2s}
+  .img-wrap:hover .img-overlay{opacity:1}
+  .btn-dl{display:inline-flex;align-items:center;gap:6px;padding:.5rem 1.1rem;border:none;border-radius:100px;font-family:'Syne',sans-serif;font-weight:700;font-size:.82rem;cursor:pointer;transition:transform .15s}
+  .btn-dl.primary{background:var(--success);color:#001a0d}
+  .btn-dl.secondary{background:rgba(255,255,255,.15);color:white;backdrop-filter:blur(8px)}
+  .btn-dl:hover{transform:translateY(-1px)}
+  .img-meta{margin-top:1rem;font-size:.8rem;color:var(--muted)}
+  /* Loading skeleton */
+  .img-skeleton{display:none;width:100%;aspect-ratio:1;background:var(--surface2);border-radius:16px;border:1px solid var(--border);position:relative;overflow:hidden}
+  .img-skeleton.visible{display:block}
+  .img-skeleton::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent 25%,rgba(255,107,157,.08) 50%,transparent 75%);animation:shimmer 1.5s infinite}
+  @keyframes shimmer{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+  .skeleton-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;color:var(--muted);font-size:.9rem}
+</style>
+</head>
+<body>
+<div class="container">
+  <a href="/" class="back">← Kembali ke Dashboard</a>
+  <header>
+    <div class="badge">🖼️ Image Generator</div>
+    <h1>Generate <span>Gambar AI</span></h1>
+    <p class="subtitle">Deskripsikan gambar yang kamu mau, AI akan membuatnya secara instan. Gratis tanpa API key.</p>
+  </header>
+
+  <div class="card">
+    <div class="section-label">✏️ Deskripsi Gambar</div>
+    <div class="field">
+      <label for="prompt">Prompt (deskripsikan gambar)</label>
+      <textarea id="prompt" placeholder="Contoh: Pemandangan gunung berapi di Indonesia saat matahari terbenam, fotorealistis, 4K&#10;Contoh: Karakter anime gadis dengan rambut biru, cyberpunk city background&#10;Contoh: Logo minimalis untuk startup teknologi, warna biru dan putih"></textarea>
+    </div>
+    <div class="field">
+      <label>Gaya Gambar</label>
+      <div class="chips">
+        <div class="chip active" data-style="">Otomatis</div>
+        <div class="chip" data-style="photorealistic, 4k, detailed">📷 Fotorealistis</div>
+        <div class="chip" data-style="digital art, illustration, vibrant colors">🎨 Digital Art</div>
+        <div class="chip" data-style="anime style, manga, japanese art">🌸 Anime</div>
+        <div class="chip" data-style="minimalist, clean, vector art">⬜ Minimalis</div>
+        <div class="chip" data-style="oil painting, artistic, painterly">🖌️ Lukisan</div>
+        <div class="chip" data-style="cinematic, dramatic lighting, film">🎬 Sinematik</div>
+      </div>
+    </div>
+    <div class="grid-2">
+      <div class="field">
+        <label for="ratio">Rasio Gambar</label>
+        <select id="ratio">
+          <option value="1024x1024">1:1 Kotak</option>
+          <option value="1280x720">16:9 Landscape</option>
+          <option value="720x1280">9:16 Portrait</option>
+          <option value="1280x854">3:2 Foto</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="negprompt">Hindari (opsional)</label>
+        <input type="text" id="negprompt" placeholder="blur, low quality, watermark...">
+      </div>
+    </div>
+  </div>
+
+  <button class="btn-generate" id="generateBtn" onclick="generateImage()">
+    <div class="btn-inner">
+      <div class="spinner" id="spinner"></div>
+      <span id="btnText">🎨 Generate Gambar</span>
+    </div>
+  </button>
+
+  <div class="error-msg" id="errorMsg"></div>
+
+  <div class="img-skeleton" id="skeleton">
+    <div class="skeleton-center">
+      <div style="font-size:2rem;margin-bottom:.5rem">✨</div>
+      <div>AI sedang melukis...</div>
+      <div style="font-size:.75rem;margin-top:.3rem;opacity:.6">Biasanya 5–15 detik</div>
+    </div>
+  </div>
+
+  <div class="image-result" id="imageResult">
+    <div class="img-wrap">
+      <img id="generatedImg" src="" alt="Generated Image">
+      <div class="img-overlay">
+        <button class="btn-dl secondary" onclick="openFullscreen()">🔍 Fullscreen</button>
+        <button class="btn-dl primary" onclick="downloadImage()">⬇️ Download</button>
+      </div>
+    </div>
+    <div class="img-meta" id="imgMeta"></div>
+  </div>
+</div>
+
+<script>
+let selectedStyle = '';
+let currentPrompt = '';
+let currentImgUrl = '';
+
+document.querySelectorAll('.chip[data-style]').forEach(c => {
+  c.addEventListener('click', () => {
+    document.querySelectorAll('.chip[data-style]').forEach(x => x.classList.remove('active'));
+    c.classList.add('active');
+    selectedStyle = c.dataset.style;
+  });
+});
+
+function showError(msg) {
+  const el = document.getElementById('errorMsg');
+  el.textContent = '⚠️ ' + msg;
+  el.classList.add('visible');
+}
+
+function setLoading(on) {
+  document.getElementById('generateBtn').disabled = on;
+  document.getElementById('spinner').style.display = on ? 'block' : 'none';
+  document.getElementById('btnText').textContent = on ? 'Sedang Generate...' : '🎨 Generate Gambar';
+  document.getElementById('skeleton').classList.toggle('visible', on);
+  if (on) document.getElementById('imageResult').classList.remove('visible');
+}
+
+async function generateImage() {
+  document.getElementById('errorMsg').classList.remove('visible');
+  const prompt = document.getElementById('prompt').value.trim();
+  const negprompt = document.getElementById('negprompt').value.trim();
+  const ratio = document.getElementById('ratio').value;
+
+  if (!prompt) return showError('Masukkan deskripsi gambar terlebih dahulu.');
+
+  const [w, h] = ratio.split('x').map(Number);
+  const fullPrompt = [prompt, selectedStyle].filter(Boolean).join(', ');
+  const negPart = negprompt ? `&negative_prompt=${encodeURIComponent(negprompt)}` : '';
+  const seed = Math.floor(Math.random() * 999999);
+
+  currentPrompt = fullPrompt;
+  currentImgUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(fullPrompt)}?width=${w}&height=${h}&seed=${seed}&nologo=true${negPart}`;
+
+  setLoading(true);
+
+  try {
+    // Load image
+    await new Promise((resolve, reject) => {
+      const img = document.getElementById('generatedImg');
+      img.onload = resolve;
+      img.onerror = () => reject(new Error('Gagal generate gambar. Coba prompt yang berbeda.'));
+      img.src = currentImgUrl;
+    });
+
+    document.getElementById('imgMeta').textContent = `${w}×${h}px • "${fullPrompt.slice(0, 60)}${fullPrompt.length > 60 ? '...' : ''}"`;
+    document.getElementById('imageResult').classList.add('visible');
+  } catch(err) {
+    showError(err.message);
+  } finally {
+    setLoading(false);
+  }
+}
+
+async function downloadImage() {
+  try {
+    const res = await fetch(currentImgUrl);
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'ai-image-' + Date.now() + '.jpg';
+    a.click();
+    URL.revokeObjectURL(url);
+  } catch {
+    window.open(currentImgUrl, '_blank');
+  }
+}
+
+function openFullscreen() {
+  window.open(currentImgUrl, '_blank');
+}
+
+// Enter to generate
+document.getElementById('prompt').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && e.ctrlKey) generateImage();
+});
+</script>
+</body>
+</html>

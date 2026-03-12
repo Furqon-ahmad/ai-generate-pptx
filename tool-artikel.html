@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Artikel Generator — AI Tools Hub</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap');
+  :root{--bg:#0a0a0f;--surface:#12121a;--surface2:#1a1a26;--border:#2a2a3d;--accent:#00e5ff;--text:#f0f0ff;--muted:#8888aa;--success:#00d68f}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+  body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 70% 50% at 20% 10%,rgba(0,229,255,0.08) 0%,transparent 60%),radial-gradient(ellipse 50% 40% at 80% 80%,rgba(108,99,255,0.07) 0%,transparent 50%);pointer-events:none;z-index:0}
+  .container{max-width:860px;margin:0 auto;padding:2rem 1.5rem 4rem;position:relative;z-index:1}
+  .back{display:inline-flex;align-items:center;gap:8px;color:var(--muted);font-size:.85rem;text-decoration:none;margin-bottom:2rem;transition:color .2s}
+  .back:hover{color:var(--text)}
+  header{text-align:center;padding:1rem 0 2.5rem}
+  .badge{display:inline-flex;align-items:center;gap:6px;background:rgba(0,229,255,0.12);border:1px solid rgba(0,229,255,0.3);color:#7ff5ff;font-size:.72rem;font-weight:500;letter-spacing:.12em;text-transform:uppercase;padding:5px 14px;border-radius:100px;margin-bottom:1.2rem}
+  h1{font-family:'Syne',sans-serif;font-size:clamp(2rem,4vw,3rem);font-weight:800;letter-spacing:-.03em;margin-bottom:.8rem}
+  h1 span{background:linear-gradient(135deg,#00e5ff,#0099ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+  .subtitle{color:var(--muted);font-size:1rem;max-width:420px;margin:0 auto;line-height:1.6}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:2rem;margin-bottom:1.5rem;position:relative;overflow:hidden}
+  .card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(0,229,255,0.5),transparent)}
+  .section-label{font-family:'Syne',sans-serif;font-size:.7rem;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-bottom:1rem;display:flex;align-items:center;gap:8px}
+  .section-label::after{content:'';flex:1;height:1px;background:var(--border)}
+  .field{margin-bottom:1.25rem}
+  label{display:block;font-size:.85rem;font-weight:500;color:#c0c0e0;margin-bottom:.5rem}
+  textarea,select,input[type=text]{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:.8rem 1rem;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.95rem;outline:none;transition:border-color .2s,box-shadow .2s}
+  textarea:focus,select:focus,input:focus{border-color:rgba(0,229,255,.5);box-shadow:0 0 0 3px rgba(0,229,255,.1)}
+  textarea{resize:vertical;min-height:80px;line-height:1.5}
+  select option{background:#1a1a26}
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+  .grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem}
+  @media(max-width:600px){.grid-2,.grid-3{grid-template-columns:1fr}}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:.5rem}
+  .chip{cursor:pointer;padding:5px 14px;border-radius:100px;border:1px solid var(--border);font-size:.8rem;color:var(--muted);background:var(--surface2);transition:all .15s;user-select:none}
+  .chip:hover{border-color:var(--accent);color:var(--text)}
+  .chip.active{background:rgba(0,229,255,.15);border-color:var(--accent);color:#7ff5ff}
+  .btn-generate{width:100%;padding:1rem;background:linear-gradient(135deg,#00b4d8,#0077b6);border:none;border-radius:12px;color:white;font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;cursor:pointer;transition:transform .15s,box-shadow .15s;margin-top:.5rem}
+  .btn-generate:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 8px 30px rgba(0,229,255,.3)}
+  .btn-generate:disabled{opacity:.6;cursor:not-allowed}
+  .btn-inner{display:flex;align-items:center;justify-content:center;gap:10px}
+  .spinner{width:18px;height:18px;border:2px solid rgba(255,255,255,.3);border-top-color:white;border-radius:50%;animation:spin .7s linear infinite;display:none}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .error-msg{display:none;background:rgba(255,80,80,.08);border:1px solid rgba(255,80,80,.25);border-radius:10px;padding:.9rem 1.1rem;color:#ff9090;font-size:.85rem;margin-top:1rem}
+  .error-msg.visible{display:block}
+  /* Result */
+  .result-wrap{display:none;margin-top:1.5rem}
+  .result-wrap.visible{display:block}
+  .result-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem}
+  .result-title{font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;color:var(--success)}
+  .result-actions{display:flex;gap:8px}
+  .btn-action{display:inline-flex;align-items:center;gap:5px;padding:.45rem 1rem;border-radius:100px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);font-size:.78rem;font-family:'Syne',sans-serif;font-weight:600;cursor:pointer;transition:all .15s}
+  .btn-action:hover{border-color:var(--accent);color:var(--text)}
+  .btn-action.primary{background:rgba(0,229,255,.15);border-color:rgba(0,229,255,.4);color:#7ff5ff}
+  .article-output{background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:1.75rem;line-height:1.85;font-size:.95rem;color:#d8d8f0;white-space:pre-wrap;max-height:600px;overflow-y:auto}
+  .word-count{font-size:.78rem;color:var(--muted);margin-top:.6rem;text-align:right}
+  ::-webkit-scrollbar{width:6px}
+  ::-webkit-scrollbar-track{background:var(--surface2)}
+  ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+</style>
+</head>
+<body>
+<div class="container">
+  <a href="/" class="back">← Kembali ke Dashboard</a>
+  <header>
+    <div class="badge">✍️ Artikel Generator</div>
+    <h1>Generate <span>Artikel AI</span></h1>
+    <p class="subtitle">Tulis artikel, blog post, atau konten marketing berkualitas tinggi dalam hitungan detik.</p>
+  </header>
+
+  <div class="card">
+    <div class="section-label">📋 Detail Konten</div>
+    <div class="field">
+      <label>Topik / Judul</label>
+      <textarea id="topic" placeholder="Contoh: 10 Tips Produktivitas untuk Remote Worker&#10;Contoh: Panduan Lengkap Investasi Saham untuk Pemula&#10;Contoh: Mengapa AI akan Mengubah Dunia Kerja"></textarea>
+    </div>
+    <div class="grid-2">
+      <div class="field">
+        <label>Jenis Konten</label>
+        <select id="contentType">
+          <option value="artikel blog">📝 Artikel Blog</option>
+          <option value="konten marketing">📣 Konten Marketing</option>
+          <option value="artikel opini">💬 Artikel Opini</option>
+          <option value="panduan how-to">📖 Panduan How-To</option>
+          <option value="listicle">📋 Listicle</option>
+          <option value="press release">📰 Press Release</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Panjang Artikel</label>
+        <select id="length">
+          <option value="pendek (300-500 kata)">Pendek (300–500 kata)</option>
+          <option value="sedang (600-900 kata)" selected>Sedang (600–900 kata)</option>
+          <option value="panjang (1000-1500 kata)">Panjang (1000–1500 kata)</option>
+        </select>
+      </div>
+    </div>
+    <div class="field">
+      <label>Gaya Penulisan</label>
+      <div class="chips">
+        <div class="chip active" data-tone="informatif dan profesional">📊 Informatif</div>
+        <div class="chip" data-tone="santai dan friendly">😊 Santai</div>
+        <div class="chip" data-tone="persuasif dan menarik">🔥 Persuasif</div>
+        <div class="chip" data-tone="akademis dan formal">🎓 Akademis</div>
+        <div class="chip" data-tone="storytelling dan naratif">📖 Storytelling</div>
+      </div>
+    </div>
+    <div class="grid-2">
+      <div class="field">
+        <label>Bahasa Output</label>
+        <select id="lang">
+          <option value="Indonesia">🇮🇩 Indonesia</option>
+          <option value="English">🇬🇧 English</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Target Pembaca</label>
+        <input type="text" id="audience" placeholder="Contoh: Mahasiswa, Pebisnis..." value="Umum">
+      </div>
+    </div>
+  </div>
+
+  <button class="btn-generate" id="generateBtn" onclick="generateArtikel()">
+    <div class="btn-inner">
+      <div class="spinner" id="spinner"></div>
+      <span id="btnText">✍️ Generate Artikel</span>
+    </div>
+  </button>
+
+  <div class="error-msg" id="errorMsg"></div>
+
+  <div class="result-wrap" id="resultWrap">
+    <div class="result-header">
+      <span class="result-title">✅ Artikel Berhasil Dibuat</span>
+      <div class="result-actions">
+        <button class="btn-action" onclick="copyText()">📋 Copy</button>
+        <button class="btn-action primary" onclick="downloadTxt()">⬇️ Download .txt</button>
+      </div>
+    </div>
+    <div class="article-output" id="articleOutput"></div>
+    <div class="word-count" id="wordCount"></div>
+  </div>
+</div>
+
+<script>
+let selectedTone = 'informatif dan profesional';
+let generatedText = '';
+
+document.querySelectorAll('.chip[data-tone]').forEach(c => {
+  c.addEventListener('click', () => {
+    document.querySelectorAll('.chip[data-tone]').forEach(x => x.classList.remove('active'));
+    c.classList.add('active');
+    selectedTone = c.dataset.tone;
+  });
+});
+
+function showError(msg) {
+  const el = document.getElementById('errorMsg');
+  el.textContent = '⚠️ ' + msg;
+  el.classList.add('visible');
+}
+
+function setLoading(on) {
+  document.getElementById('generateBtn').disabled = on;
+  document.getElementById('spinner').style.display = on ? 'block' : 'none';
+  document.getElementById('btnText').textContent = on ? 'Sedang Menulis...' : '✍️ Generate Artikel';
+}
+
+async function generateArtikel() {
+  document.getElementById('errorMsg').classList.remove('visible');
+  document.getElementById('resultWrap').classList.remove('visible');
+
+  const topic = document.getElementById('topic').value.trim();
+  const contentType = document.getElementById('contentType').value;
+  const length = document.getElementById('length').value;
+  const lang = document.getElementById('lang').value;
+  const audience = document.getElementById('audience').value.trim() || 'Umum';
+  const model = 'meta-llama/llama-3.3-70b-instruct:free';
+
+  if (!topic) return showError('Masukkan topik artikel terlebih dahulu.');
+
+  setLoading(true);
+
+  try {
+    const prompt = `Kamu adalah penulis konten profesional. Tulis ${contentType} dalam bahasa ${lang} dengan ketentuan berikut:
+
+TOPIK: ${topic}
+TARGET PEMBACA: ${audience}
+GAYA PENULISAN: ${selectedTone}
+PANJANG: ${length}
+
+Tulis artikel yang lengkap, menarik, dan berkualitas tinggi. Gunakan heading (##) untuk struktur yang jelas. Mulai langsung dengan kontennya, tanpa intro atau penjelasan tambahan.`;
+
+    const res = await fetch('/api/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model,
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.8,
+        max_tokens: 3000
+      })
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+
+    generatedText = data.choices[0]?.message?.content || '';
+    if (!generatedText) throw new Error('AI tidak menghasilkan teks. Coba lagi.');
+
+    document.getElementById('articleOutput').textContent = generatedText;
+    const wordCount = generatedText.split(/\s+/).filter(Boolean).length;
+    document.getElementById('wordCount').textContent = `${wordCount} kata`;
+    document.getElementById('resultWrap').classList.add('visible');
+
+  } catch(err) {
+    showError(err.message);
+  } finally {
+    setLoading(false);
+  }
+}
+
+function copyText() {
+  navigator.clipboard.writeText(generatedText).then(() => {
+    const btn = document.querySelector('.btn-action');
+    btn.textContent = '✅ Copied!';
+    setTimeout(() => btn.textContent = '📋 Copy', 2000);
+  });
+}
+
+function downloadTxt() {
+  const blob = new Blob([generatedText], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'artikel-' + Date.now() + '.txt';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+</script>
+</body>
+</html>

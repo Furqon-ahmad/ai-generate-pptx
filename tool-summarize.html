@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Summarize — AI Tools Hub</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap');
+  :root{--bg:#0a0a0f;--surface:#12121a;--surface2:#1a1a26;--border:#2a2a3d;--accent:#00d68f;--text:#f0f0ff;--muted:#8888aa}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+  body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 70% 50% at 20% 10%,rgba(0,214,143,0.08) 0%,transparent 60%),radial-gradient(ellipse 50% 40% at 80% 80%,rgba(108,99,255,0.06) 0%,transparent 50%);pointer-events:none;z-index:0}
+  .container{max-width:860px;margin:0 auto;padding:2rem 1.5rem 4rem;position:relative;z-index:1}
+  .back{display:inline-flex;align-items:center;gap:8px;color:var(--muted);font-size:.85rem;text-decoration:none;margin-bottom:2rem;transition:color .2s}
+  .back:hover{color:var(--text)}
+  header{text-align:center;padding:1rem 0 2.5rem}
+  .badge{display:inline-flex;align-items:center;gap:6px;background:rgba(0,214,143,0.12);border:1px solid rgba(0,214,143,0.3);color:#6effd4;font-size:.72rem;font-weight:500;letter-spacing:.12em;text-transform:uppercase;padding:5px 14px;border-radius:100px;margin-bottom:1.2rem}
+  h1{font-family:'Syne',sans-serif;font-size:clamp(2rem,4vw,3rem);font-weight:800;letter-spacing:-.03em;margin-bottom:.8rem}
+  h1 span{background:linear-gradient(135deg,#00d68f,#00a86b);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+  .subtitle{color:var(--muted);font-size:1rem;max-width:440px;margin:0 auto;line-height:1.6}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:2rem;margin-bottom:1.5rem;position:relative;overflow:hidden}
+  .card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(0,214,143,0.5),transparent)}
+  .section-label{font-family:'Syne',sans-serif;font-size:.7rem;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-bottom:1rem;display:flex;align-items:center;gap:8px}
+  .section-label::after{content:'';flex:1;height:1px;background:var(--border)}
+  .field{margin-bottom:1.25rem}
+  label{display:block;font-size:.85rem;font-weight:500;color:#c0c0e0;margin-bottom:.5rem}
+  .label-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem}
+  .char-count{font-size:.75rem;color:var(--muted)}
+  textarea,select{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:.8rem 1rem;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.95rem;outline:none;transition:border-color .2s,box-shadow .2s}
+  textarea:focus,select:focus{border-color:rgba(0,214,143,.5);box-shadow:0 0 0 3px rgba(0,214,143,.1)}
+  textarea{resize:vertical;line-height:1.6}
+  select option{background:#1a1a26}
+  .grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem}
+  @media(max-width:600px){.grid-3{grid-template-columns:1fr}}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:.5rem}
+  .chip{cursor:pointer;padding:5px 14px;border-radius:100px;border:1px solid var(--border);font-size:.8rem;color:var(--muted);background:var(--surface2);transition:all .15s;user-select:none}
+  .chip:hover{border-color:var(--accent);color:var(--text)}
+  .chip.active{background:rgba(0,214,143,.15);border-color:var(--accent);color:#6effd4}
+  .btn-generate{width:100%;padding:1rem;background:linear-gradient(135deg,#00d68f,#00a86b);border:none;border-radius:12px;color:#001a0d;font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;cursor:pointer;transition:transform .15s,box-shadow .15s;margin-top:.5rem}
+  .btn-generate:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 8px 30px rgba(0,214,143,.35)}
+  .btn-generate:disabled{opacity:.6;cursor:not-allowed}
+  .btn-inner{display:flex;align-items:center;justify-content:center;gap:10px}
+  .spinner{width:18px;height:18px;border:2px solid rgba(0,26,13,.3);border-top-color:#001a0d;border-radius:50%;animation:spin .7s linear infinite;display:none}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .error-msg{display:none;background:rgba(255,80,80,.08);border:1px solid rgba(255,80,80,.25);border-radius:10px;padding:.9rem 1.1rem;color:#ff9090;font-size:.85rem;margin-top:1rem}
+  .error-msg.visible{display:block}
+  /* Result */
+  .result-wrap{display:none;margin-top:1.5rem}
+  .result-wrap.visible{display:block}
+  .result-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:.5rem}
+  .result-title{font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;color:var(--accent)}
+  .result-actions{display:flex;gap:8px}
+  .btn-action{display:inline-flex;align-items:center;gap:5px;padding:.45rem 1rem;border-radius:100px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);font-size:.78rem;font-family:'Syne',sans-serif;font-weight:600;cursor:pointer;transition:all .15s}
+  .btn-action:hover{border-color:var(--accent);color:var(--text)}
+  /* Stats bar */
+  .stats-bar{display:flex;gap:1rem;margin-bottom:1rem;flex-wrap:wrap}
+  .stat{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:.6rem 1rem;font-size:.78rem;color:var(--muted);flex:1;min-width:120px;text-align:center}
+  .stat strong{display:block;font-family:'Syne',sans-serif;font-size:1.1rem;color:var(--accent);font-weight:700;margin-bottom:2px}
+  /* Summary output - rendered */
+  .summary-output{background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:1.75rem;line-height:1.85;color:#d8d8f0;max-height:500px;overflow-y:auto}
+  .summary-output h2,.summary-output h3{font-family:'Syne',sans-serif;color:var(--accent);margin:1rem 0 .5rem;font-size:1rem}
+  .summary-output ul{padding-left:1.2rem;margin:.4rem 0}
+  .summary-output li{margin-bottom:.4rem;font-size:.92rem}
+  .summary-output p{margin-bottom:.6rem;font-size:.92rem}
+  .summary-output strong{color:#f0f0ff}
+  ::-webkit-scrollbar{width:6px}
+  ::-webkit-scrollbar-track{background:var(--surface2)}
+  ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+</style>
+</head>
+<body>
+<div class="container">
+  <a href="/" class="back">← Kembali ke Dashboard</a>
+  <header>
+    <div class="badge">📝 Summarize</div>
+    <h1>Rangkum <span>Teks AI</span></h1>
+    <p class="subtitle">Paste teks panjang, artikel, atau dokumen — AI akan merangkumnya jadi poin-poin singkat dan padat.</p>
+  </header>
+
+  <div class="card">
+    <div class="section-label">📄 Teks yang Ingin Dirangkum</div>
+    <div class="field">
+      <div class="label-row">
+        <label>Teks Input</label>
+        <span class="char-count" id="charCount">0 karakter</span>
+      </div>
+      <textarea id="inputText" rows="10" placeholder="Paste teks di sini... Bisa berupa artikel, laporan, berita, materi kuliah, atau teks apapun yang ingin dirangkum.&#10;&#10;Minimal 100 karakter untuk hasil yang optimal."></textarea>
+    </div>
+    <div class="field">
+      <label>Format Ringkasan</label>
+      <div class="chips">
+        <div class="chip active" data-format="poin-poin bullet">📌 Poin-Poin</div>
+        <div class="chip" data-format="paragraf singkat">📄 Paragraf</div>
+        <div class="chip" data-format="tabel perbandingan">📊 Tabel</div>
+        <div class="chip" data-format="mind map teks">🧠 Mind Map</div>
+      </div>
+    </div>
+    <div class="grid-3">
+      <div class="field">
+        <label>Panjang Ringkasan</label>
+        <select id="summaryLen">
+          <option value="sangat singkat (3-5 poin)">Sangat Singkat</option>
+          <option value="sedang (5-8 poin)" selected>Sedang</option>
+          <option value="detail (8-12 poin)">Detail</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Bahasa Output</label>
+        <select id="lang">
+          <option value="Indonesia">🇮🇩 Indonesia</option>
+          <option value="English">🇬🇧 English</option>
+          <option value="sama dengan input">Sama dengan input</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Fokus Pada</label>
+        <select id="focus">
+          <option value="poin utama">Poin Utama</option>
+          <option value="fakta dan data">Fakta & Data</option>
+          <option value="kesimpulan dan rekomendasi">Kesimpulan</option>
+          <option value="kronologi kejadian">Kronologi</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <button class="btn-generate" id="generateBtn" onclick="summarize()">
+    <div class="btn-inner">
+      <div class="spinner" id="spinner"></div>
+      <span id="btnText">📝 Rangkum Sekarang</span>
+    </div>
+  </button>
+
+  <div class="error-msg" id="errorMsg"></div>
+
+  <div class="result-wrap" id="resultWrap">
+    <div class="stats-bar">
+      <div class="stat"><strong id="statInput">-</strong>Input</div>
+      <div class="stat"><strong id="statOutput">-</strong>Ringkasan</div>
+      <div class="stat"><strong id="statCompress">-</strong>Kompresi</div>
+    </div>
+    <div class="result-header">
+      <span class="result-title">✅ Ringkasan Selesai</span>
+      <div class="result-actions">
+        <button class="btn-action" onclick="copyResult()">📋 Copy</button>
+        <button class="btn-action" onclick="downloadResult()">⬇️ .txt</button>
+      </div>
+    </div>
+    <div class="summary-output" id="summaryOutput"></div>
+  </div>
+</div>
+
+<script>
+let selectedFormat = 'poin-poin bullet';
+let summaryText = '';
+
+document.querySelectorAll('.chip[data-format]').forEach(c => {
+  c.addEventListener('click', () => {
+    document.querySelectorAll('.chip[data-format]').forEach(x => x.classList.remove('active'));
+    c.classList.add('active');
+    selectedFormat = c.dataset.format;
+  });
+});
+
+document.getElementById('inputText').addEventListener('input', function() {
+  document.getElementById('charCount').textContent = this.value.length.toLocaleString('id') + ' karakter';
+});
+
+function showError(msg) {
+  const el = document.getElementById('errorMsg');
+  el.textContent = '⚠️ ' + msg;
+  el.classList.add('visible');
+}
+
+function setLoading(on) {
+  document.getElementById('generateBtn').disabled = on;
+  document.getElementById('spinner').style.display = on ? 'block' : 'none';
+  document.getElementById('btnText').textContent = on ? 'Sedang Merangkum...' : '📝 Rangkum Sekarang';
+}
+
+// Simple markdown renderer
+function renderMarkdown(text) {
+  return text
+    .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+    .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/^\* (.+)$/gm, '<li>$1</li>')
+    .replace(/^- (.+)$/gm, '<li>$1</li>')
+    .replace(/^\d+\. (.+)$/gm, '<li>$1</li>')
+    .replace(/(<li>.*<\/li>)/gs, '<ul>$1</ul>')
+    .replace(/\n\n/g, '</p><p>')
+    .replace(/^(?!<[hlu])/gm, '')
+    .trim();
+}
+
+async function summarize() {
+  document.getElementById('errorMsg').classList.remove('visible');
+  document.getElementById('resultWrap').classList.remove('visible');
+
+  const text = document.getElementById('inputText').value.trim();
+  const lang = document.getElementById('lang').value;
+  const length = document.getElementById('summaryLen').value;
+  const focus = document.getElementById('focus').value;
+
+  if (!text) return showError('Masukkan teks yang ingin dirangkum.');
+  if (text.length < 50) return showError('Teks terlalu pendek. Minimal 50 karakter.');
+
+  setLoading(true);
+
+  try {
+    const prompt = `Rangkum teks berikut dalam bahasa ${lang} dengan format ${selectedFormat}.
+
+Ketentuan:
+- Panjang ringkasan: ${length}
+- Fokus pada: ${focus}
+- Gunakan bahasa yang jelas dan mudah dipahami
+- Format dengan heading (##) dan bullet points yang rapi
+
+TEKS YANG DIRANGKUM:
+${text.slice(0, 8000)}`;
+
+    const res = await fetch('/api/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'meta-llama/llama-3.3-70b-instruct:free',
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.3,
+        max_tokens: 2000
+      })
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+
+    summaryText = data.choices[0]?.message?.content || '';
+    if (!summaryText) throw new Error('AI tidak menghasilkan ringkasan. Coba lagi.');
+
+    // Stats
+    const inputWords = text.split(/\s+/).length;
+    const outputWords = summaryText.split(/\s+/).length;
+    const compression = Math.round((1 - outputWords / inputWords) * 100);
+    document.getElementById('statInput').textContent = inputWords + ' kata';
+    document.getElementById('statOutput').textContent = outputWords + ' kata';
+    document.getElementById('statCompress').textContent = compression + '%';
+
+    // Render
+    document.getElementById('summaryOutput').innerHTML = '<p>' + renderMarkdown(summaryText) + '</p>';
+    document.getElementById('resultWrap').classList.add('visible');
+
+  } catch(err) {
+    showError(err.message);
+  } finally {
+    setLoading(false);
+  }
+}
+
+function copyResult() {
+  navigator.clipboard.writeText(summaryText).then(() => {
+    const btn = document.querySelector('.btn-action');
+    btn.textContent = '✅ Copied!';
+    setTimeout(() => btn.textContent = '📋 Copy', 2000);
+  });
+}
+
+function downloadResult() {
+  const blob = new Blob([summaryText], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'ringkasan-' + Date.now() + '.txt';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+</script>
+</body>
+</html>
