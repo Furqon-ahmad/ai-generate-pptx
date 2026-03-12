@@ -156,6 +156,7 @@
   .tool-card.image  { --card-color: #ff6b9d; --card-glow: rgba(255,107,157,0.1); --card-shadow: rgba(255,107,157,0.2); }
   .tool-card.text   { --card-color: #00e5ff; --card-glow: rgba(0,229,255,0.08); --card-shadow: rgba(0,229,255,0.15); }
   .tool-card.summarize { --card-color: #00d68f; --card-glow: rgba(0,214,143,0.08); --card-shadow: rgba(0,214,143,0.15); }
+  .tool-card.chat   { --card-color: #f5a623; --card-glow: rgba(245,166,35,0.1); --card-shadow: rgba(245,166,35,0.2); }
 
   .card-icon {
     font-size: 2.4rem;
@@ -244,7 +245,7 @@
   <header>
     <div class="badge">AI Tools Hub</div>
     <h1>Semua <span>Tools AI</span><br>dalam Satu Tempat</h1>
-    <p class="subtitle">Buat presentasi, generate gambar, tulis artikel, dan rangkum teks — semua ditenagai AI.</p>
+    <p class="subtitle">Buat presentasi, generate gambar, tulis artikel, rangkum teks, dan chat dengan AI — semua dalam satu tempat.</p>
   </header>
 
   <div class="tools-grid">
@@ -294,6 +295,19 @@
         <span class="card-tag">Ringkasan</span>
         <span class="card-tag">Poin Utama</span>
         <span class="card-tag">Multi Bahasa</span>
+      </div>
+    </a>
+
+    <a href="/tool-chat.html" class="tool-card chat" style="grid-column: 1 / -1;">
+      <span class="card-icon">💬</span>
+      <span class="card-arrow">→</span>
+      <div class="card-title">AI Chatbot</div>
+      <div class="card-desc">Chat langsung dengan AI assistant yang cerdas dan friendly. Bisa bantu koding, nulis, analisis, terjemah, brainstorm — apapun yang kamu butuhkan. Mendukung percakapan multi-turn dengan memori konteks.</div>
+      <div class="card-tags">
+        <span class="card-tag">Multi-turn</span>
+        <span class="card-tag">Markdown</span>
+        <span class="card-tag">Code Highlight</span>
+        <span class="card-tag">5 Model AI</span>
       </div>
     </a>
 
