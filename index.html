@@ -737,12 +737,23 @@ async function buildPPTX(data, ratio) {
   pptxFilename = (data.title || 'presentasi').replace(/[^a-zA-Z0-9\s]/g,'').replace(/\s+/g,'-').toLowerCase() + '.pptx';
   pptxBlob = await pptx.write({ outputType: 'blob' });
 
+  // ✅ Auto-download langsung begitu selesai
+  const dlUrl = URL.createObjectURL(pptxBlob);
+  const dlA = document.createElement('a');
+  dlA.href = dlUrl;
+  dlA.download = pptxFilename;
+  document.body.appendChild(dlA);
+  dlA.click();
+  document.body.removeChild(dlA);
+  setTimeout(() => URL.revokeObjectURL(dlUrl), 3000);
+
+  // Tombol download sebagai cadangan kalau browser blokir auto-download
   document.getElementById('downloadBtn').onclick = () => {
-    const url = URL.createObjectURL(pptxBlob);
-    const a = document.createElement('a');
-    a.href = url; a.download = pptxFilename;
-    a.click();
-    URL.revokeObjectURL(url);
+    const url2 = URL.createObjectURL(pptxBlob);
+    const a2 = document.createElement('a');
+    a2.href = url2; a2.download = pptxFilename;
+    a2.click();
+    URL.revokeObjectURL(url2);
   };
 }
 
